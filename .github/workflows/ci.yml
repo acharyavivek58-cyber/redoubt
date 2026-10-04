@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref — a pushed fix should not wait behind
+# a stale build.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Pinned in package.json engines and Dockerfile.
+          node-version: '24'
+          cache: npm
+
+      # `npm ci` fails if package-lock.json is out of sync with package.json,
+      # which is exactly the drift we want to catch.
+      - name: Install dependencies
+        run: npm ci
+
+      # esbuild's postinstall is required for tsx and vitest to run at all.
+      - name: Approve esbuild install scripts
+        run: |
+          npm install-scripts approve esbuild || true
+          npm rebuild esbuild
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      # No database is needed: the suite covers pure domain logic, schema SQL,
+      # compile-time guarantees, and rendering — none of which touch Postgres.
+      - name: Tests
+        run: npm test
+
+      - name: Performance budgets
+        run: npm run perf
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify .env is not committed
+        run: |
+          if git ls-files --error-unmatch .env >/dev/null 2>&1; then
+            echo "::error::.env is tracked in git. It must never be committed."
+            exit 1
+          fi
+          if grep -rIl --exclude-dir=node_modules --exclude-dir=.git \
+              -E 'MTA[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{35}|ghp_[A-Za-z0-9]{36}' . ; then
+            echo "::error::A credential-shaped string was found in a tracked file."
+            exit 1
+          fi
+          echo "No secrets found in tracked files."
+
+      - name: Dependency audit
+        run: npm audit --audit-level=high

@@ -1,0 +1,35 @@
+# Secrets — must never enter an image layer.
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+coverage/
+.freebuff/
+
+# Tests and tooling are not part of the runtime image.
+tests/
+.github/
+*.test.ts
+vitest.config.ts
+vitest.perf.config.ts
+eslint.config.js
+
+# Local artifacts
+*.log
+logs/
+*.sqlite
+*.sqlite3
+*.db
+dumps/
+
+# Docs and VCS
+.git/
+.gitignore
+README.md
+DEVELOPMENT.md
+ARCHITECTURE.md
+SECURITY.md
+Dockerfile
+.dockerignore

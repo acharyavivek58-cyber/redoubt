@@ -1,0 +1,47 @@
+{
+  "name": "redoubt",
+  "version": "1.0.0",
+  "description": "REDOUBT — all-in-one Discord server management bot",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/core/db/migrate-cli.ts",
+    "perf": "vitest run --config vitest.perf.config.ts"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "4.0.87",
+    "ai": "7.0.127",
+    "discord.js": "14.27.0",
+    "drizzle-orm": "0.45.3",
+    "pg-boss": "12.36.0",
+    "pino": "10.4.0",
+    "postgres": "3.4.9",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "26.6.4",
+    "drizzle-kit": "0.31.11",
+    "eslint": "10.12.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vitest": "5.0.3"
+  },
+  "allowScripts": {
+    "esbuild@0.18.20": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
+  }
+}

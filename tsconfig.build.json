@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "noEmit": false,
+    "declaration": false,
+    "sourceMap": true,
+    "removeComments": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "drizzle",
+    "tests/type-level/automod-enforcer.type-test.ts"
+  ]
+}

@@ -1,0 +1,49 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# SECRETS — never commit. `.env` holds the Discord token, database
+# credentials, and (optionally) the Gemini key. `.env.example` IS committed
+# and must contain placeholders only.
+.env
+.env.*
+!.env.example
+
+# Local databases / dumps
+*.sqlite
+*.sqlite3
+*.db
+dumps/
+backup-dumps/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Coverage and test artifacts
+coverage/
+.nyc_output/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Agent / tooling scratch space
+.freebuff/
+
+# Temp files
+*.tmp
+*.temp
+*.bak

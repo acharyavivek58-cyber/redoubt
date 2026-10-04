@@ -1,0 +1,13 @@
+# Normalize line endings so a Windows checkout and a Linux CI runner agree.
+* text=auto eol=lf
+
+*.ts   text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.sql  text eol=lf
+
+# Generated snapshots are tooling-owned.
+drizzle/meta/*.json -diff linguist-generated=true

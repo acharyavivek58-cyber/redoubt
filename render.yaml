@@ -1,0 +1,99 @@
+# Render blueprint.
+#
+# PostgreSQL is a SEPARATE Render resource — jobs run on the same database, so
+# there is no Redis to provision. See ARCHITECTURE.md.
+#
+# Migrations are a MANUAL pre-deploy step, not an automatic one. Workers refuse
+# to boot against a half-migrated schema, so the migration must complete first.
+# See "Deployment" below.
+
+databases:
+  - name: redoubt-db
+    databaseName: redoubt
+    user: redoubt
+    plan: basic-256mb
+    postgresMajorVersion: '16'
+
+services:
+  - type: web
+    name: redoubt
+    runtime: node
+    plan: starter
+    region: oregon
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: null
+
+    buildCommand: npm ci && npm run build
+    startCommand: node dist/index.js
+
+    # Discord is a WebSocket client, not an inbound HTTP service. This runs as
+    # a background worker in effect; `web` is used only because Render needs a
+    # service type, and no public port is required.
+    autoDeploy: true
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: DISCORD_TOKEN
+        sync: false # Set in the dashboard. Never committed.
+
+      - key: DISCORD_CLIENT_ID
+        sync: false
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: redoubt-db
+          property: connectionString
+
+      - key: DATABASE_POOL_MAX
+        value: '10'
+
+      - key: JOBS_ENABLED
+        value: 'true'
+
+      - key: JOBS_CONCURRENCY
+        value: '5'
+
+      # Single process. SHARD_TOTAL stays 0 until the gateway limit is
+      # actually approached — see "Scaling" below.
+      - key: SHARD_TOTAL
+        value: '0'
+
+      - key: RUN_MIGRATIONS
+        value: 'false' # See "Deployment" below.
+
+      - key: LOG_LEVEL
+        value: info
+
+      - key: LOG_PRETTY
+        value: 'false'
+
+      # Optional. With no key the bot runs normally and AI features disable
+      # themselves. Free tier only — there is no paid fallback.
+      - key: GEMINI_API_KEY
+        sync: false
+
+  - type: job
+    name: redoubt-migrate
+    runtime: node
+    plan: starter
+    branch: main
+    # Manual: run before deploying the web service.
+    autoDeploy: false
+
+    buildCommand: npm ci
+    startCommand: npm run db:migrate
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: redoubt-db
+          property: connectionString
